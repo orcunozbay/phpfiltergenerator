@@ -65,7 +65,14 @@ class Filter
         echo $this->renderedString;
     }
     
-    
+    public function addColumnAndValueViaMySQLResult($mysqlResult)
+    {
+        throw Exception("Not Implemented", "1404", "");
+        
+        
+        
+        
+    }
     
     
     
