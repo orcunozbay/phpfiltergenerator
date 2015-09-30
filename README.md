@@ -19,6 +19,8 @@ Bazı metod ve fonksiyonları vardır. Bunları sırasıyla başlıklar altında
 addFilteredColumn($ColumnName);
 -- Burada fonksiyona verdiğimiz değer bir filtrelenecek kolonun adını yada imzasını içerir.
 
+getFilteredColumnList();
+-- bu method, sınıf örneğinin içerisinde istiflenmiş filtreli sütunların listesi ekrana dökecektir.
 
 
 

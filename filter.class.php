@@ -7,13 +7,23 @@ class Filter
     private $FilterColumnValues=array(); // all specified columns values of filtered columns
     private $LastAddedFilteredColumn=""; // at last added filtered columns name
     private $renderedString="";
+    private $FilterColumnsAsOptionList="";
     
-    public function addFilteredColumn($ColumnName)
+    public function addFilteredColumn($ColumnKey,$ColumnValue="")
     {
-        array_push($this->FilterColumns, $ColumnName);
-        //array_push($this->FilterColumnValues
-        $this->FilterColumnValues[$ColumnName]=array();
-        $this->LastAddedFilteredColumn=$ColumnName;
+        if($ColumnValue=="")
+        {
+            // sadece değer gelirse.
+            array_push($this->FilterColumns, $ColumnName);
+            //array_push($this->FilterColumnValues
+            $this->FilterColumnValues[$ColumnName]=array();
+            $this->LastAddedFilteredColumn=$ColumnName;
+        }
+        else
+        {
+            //hem anahtar hem değer gelirse
+        }
+       
     }
     
     
@@ -73,6 +83,21 @@ class Filter
         
         
     }
+    
+    public function getFilteredColumnListAsOptionList()
+    {
+        $this->generateFilteredColumnListAsOptionList();
+        return $this->FilterColumnsAsOptionList;
+    }
+    
+    
+     public function generateFilteredColumnListAsOptionList()
+     {
+          for($i=0;$i<count($this->FilterColumns);$i++)
+        {
+              $this->FilterColumnsAsOptionList.='<option value="'.$this->FilterColumns[$i].'">'.$this->FilterColumns[$i]."</option>";
+        }
+     }
     
     
     
