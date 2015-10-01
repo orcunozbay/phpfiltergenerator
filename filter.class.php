@@ -8,20 +8,49 @@ class Filter
     private $LastAddedFilteredColumn=""; // at last added filtered columns name
     private $renderedString="";
     private $FilterColumnsAsOptionList="";
+    private $IsPivotDesign=false;
+    private $pivotKeyField="";
+    private $pivotValueField="";
+    
+    public function __construct($isPivotDesign=false) {
+        $this->IsPivotDesign=$isPivotDesign;
+    }
     
     public function addFilteredColumn($ColumnKey,$ColumnValue="")
     {
-        if($ColumnValue=="")
+        if($this->IsPivotDesign)
         {
-            // sadece değer gelirse.
-            array_push($this->FilterColumns, $ColumnName);
-            //array_push($this->FilterColumnValues
-            $this->FilterColumnValues[$ColumnName]=array();
-            $this->LastAddedFilteredColumn=$ColumnName;
+            if($this->pivotKeyField=="" || $this->pivotValueField=="")
+                throw new Exception ("Pivot parameters are not defined! Please define pivot parameters first. setPivotParameters(KeyField,ValueField)", 1031, null);
+            
+            if($ColumnValue=="")
+            {
+                // sadece değer gelirse.
+                array_push($this->FilterColumns, $ColumnKey);
+                //array_push($this->FilterColumnValues
+                $this->FilterColumnValues[$ColumnKey]=array();
+                $this->LastAddedFilteredColumn=$ColumnKey;
+            }
+            else
+            {
+                //hem anahtar hem değer gelirse
+            }
+            
         }
         else
         {
-            //hem anahtar hem değer gelirse
+            if($ColumnValue=="")
+            {
+                // sadece değer gelirse.
+                array_push($this->FilterColumns, $ColumnKey);
+                //array_push($this->FilterColumnValues
+                $this->FilterColumnValues[$ColumnKey]=array();
+                $this->LastAddedFilteredColumn=$ColumnKey;
+            }
+            else
+            {
+                //hem anahtar hem değer gelirse
+            }
         }
        
     }
@@ -50,29 +79,58 @@ class Filter
     
     public function renderAll()
     {
-        for($i=0;$i<count($this->FilterColumns);$i++)
+        if($this->IsPivotDesign)
         {
-            if(is_array($this->FilterColumnValues[$this->FilterColumns[$i]]) && count($this->FilterColumnValues[$this->FilterColumns[$i]])>1)
+            for($i=0;$i<count($this->FilterColumns);$i++)
             {
-                $this->renderedString.=" ".$this->FilterColumns[$i]." in(";
-                for($x=0;$x<count($this->FilterColumnValues[$this->FilterColumns[$i]]);$x++)
+                if(is_array($this->FilterColumnValues[$this->FilterColumns[$i]]) && count($this->FilterColumnValues[$this->FilterColumns[$i]])>1)
                 {
-                    $this->renderedString.="'".$this->FilterColumnValues[$this->FilterColumns[$i]][$x]."'";
-                    if($x<count($this->FilterColumnValues[$this->FilterColumns[$i]])-1)
-                        $this->renderedString.=",";
+                    $this->renderedString.= " (".$this->pivotKeyField."='".$this->FilterColumns[$i]."' and ".$this->pivotValueField." in(";
+                    for($x=0;$x<count($this->FilterColumnValues[$this->FilterColumns[$i]]);$x++)
+                    {
+                        $this->renderedString.="'".$this->FilterColumnValues[$this->FilterColumns[$i]][$x]."'";
+                        if($x<count($this->FilterColumnValues[$this->FilterColumns[$i]])-1)
+                            $this->renderedString.=",";
+                    }
+                    $this->renderedString.="))";
+
                 }
-                $this->renderedString.=")";
-                
+                else
+                {
+                    $this->renderedString.= "(".$this->pivotKeyField."='".$this->FilterColumns[$i]."' and ".$this->pivotValueField." ='".$this->FilterColumnValues[$this->FilterColumns[$i]][0]."') ";
+                }
+                if($i<count($this->FilterColumns)-1)
+                    $this->renderedString.=" and ";
             }
-            else
-            {
-                $this->renderedString.=$this->FilterColumns[$i]." ='".$this->FilterColumnValues[$this->FilterColumns[$i]][0]."' ";
-            }
-            if($i<count($this->FilterColumns)-1)
-                $this->renderedString.=" and ";
+
+            return $this->renderedString;
         }
-        
-        echo $this->renderedString;
+        else
+        {
+            for($i=0;$i<count($this->FilterColumns);$i++)
+            {
+                if(is_array($this->FilterColumnValues[$this->FilterColumns[$i]]) && count($this->FilterColumnValues[$this->FilterColumns[$i]])>1)
+                {
+                    $this->renderedString.=" ".$this->FilterColumns[$i]." in(";
+                    for($x=0;$x<count($this->FilterColumnValues[$this->FilterColumns[$i]]);$x++)
+                    {
+                        $this->renderedString.="'".$this->FilterColumnValues[$this->FilterColumns[$i]][$x]."'";
+                        if($x<count($this->FilterColumnValues[$this->FilterColumns[$i]])-1)
+                            $this->renderedString.=",";
+                    }
+                    $this->renderedString.=")";
+
+                }
+                else
+                {
+                    $this->renderedString.=$this->FilterColumns[$i]." ='".$this->FilterColumnValues[$this->FilterColumns[$i]][0]."' ";
+                }
+                if($i<count($this->FilterColumns)-1)
+                    $this->renderedString.=" and ";
+            }
+
+            return $this->renderedString;
+        }
     }
     
     public function addColumnAndValueViaMySQLResult($mysqlResult)
@@ -97,6 +155,12 @@ class Filter
         {
               $this->FilterColumnsAsOptionList.='<option value="'.$this->FilterColumns[$i].'">'.$this->FilterColumns[$i]."</option>";
         }
+     }
+     
+     public function setPivotParameters($keyField,$valueField)
+     {
+         $this->pivotKeyField=$keyField;
+         $this->pivotValueField=$valueField;
      }
     
     
